@@ -25,6 +25,8 @@ public class AppUser {
     private Date createdAt;
 
     private String profileImage;
+    @Column(length = 500)
+    private String token;
 
     public int getId() {
         return id;
@@ -104,5 +106,13 @@ public class AppUser {
 
     public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
