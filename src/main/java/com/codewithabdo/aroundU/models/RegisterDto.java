@@ -10,7 +10,7 @@ public class RegisterDto {
 
     @NotEmpty
     private String email;
-
+    @NotEmpty
     private String phone;
 
     private String address;

@@ -122,19 +122,19 @@ public class AccountController {
         }
 
         try {
-            // Authenticate the user
+            // Authenticate the user using email and password
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
-                            loginDto.getUsername(),
+                            loginDto.getEmail(),
                             loginDto.getPassword()
                     )
             );
 
-            // Fetch user details
-            AppUser appUser = appUserRepository.findByUsername(loginDto.getUsername());
+            // Fetch user details by email
+            AppUser appUser = appUserRepository.findByEmail(loginDto.getEmail());
             if (appUser == null) {
                 response.put("status", false);
-                response.put("message", "Invalid username or password.");
+                response.put("message", "Invalid email or password.");
                 return ResponseEntity.badRequest().body(response); // Return 400 if user not found
             }
 
@@ -151,7 +151,7 @@ public class AccountController {
             return ResponseEntity.ok(response); // Return 200 OK with user details and token
         } catch (Exception ex) {
             response.put("status", false);
-            response.put("message", "Invalid username or password.");
+            response.put("message", "Invalid email or password.");
             return ResponseEntity.badRequest().body(response); // Return 400 for invalid credentials
         }
     }
