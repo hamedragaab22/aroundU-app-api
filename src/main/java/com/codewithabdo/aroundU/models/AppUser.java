@@ -1,38 +1,31 @@
 package com.codewithabdo.aroundU.models;
 
-import jakarta.persistence.*;
-
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
 
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 public class AppUser {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    @Id // MongoDB uses @Id for the primary key
+    private String id; // MongoDB uses String for ID by default
 
     private String fullName;
-
-    @Column(unique = true)
     private String username;
-    @Column(unique = true,nullable = false)
     private String email;
-
     private String phone;
     private String address;
     private String password;
     private String role;
     private Date createdAt;
-
     private String profileImage;
-    @Column(length = 500)
     private String token;
 
-    public int getId() {
+    // Getters and Setters
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 

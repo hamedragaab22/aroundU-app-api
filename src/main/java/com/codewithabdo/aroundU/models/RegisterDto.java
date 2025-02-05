@@ -1,23 +1,28 @@
 package com.codewithabdo.aroundU.models;
 
-
 import jakarta.validation.constraints.*;
 
 public class RegisterDto {
     @NotEmpty
     private String fullName;
+
     @NotEmpty
     private String username;
+
     @NotEmpty
     private String email;
+
     private String phone;
+
     private String address;
 
     private String profileImage;
+
     @NotEmpty
-    @Size(min = 6,message = "Minimum password length is 6 character")
+    @Size(min = 6, message = "Minimum password length is 6 characters")
     private String password;
 
+    // Getters and Setters
     public String getFullName() {
         return fullName;
     }
