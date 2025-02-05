@@ -3,8 +3,7 @@ package com.codewithabdo.aroundU.models;
 import jakarta.validation.constraints.*;
 
 public class RegisterDto {
-    @NotEmpty
-    private String fullName;
+
 
     @NotEmpty
     private String username;
@@ -23,13 +22,7 @@ public class RegisterDto {
     private String password;
 
     // Getters and Setters
-    public String getFullName() {
-        return fullName;
-    }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
 
     public String getUsername() {
         return username;

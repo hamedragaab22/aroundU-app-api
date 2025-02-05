@@ -20,7 +20,6 @@ import org.springframework.security.oauth2.jwt.*;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
@@ -39,11 +38,6 @@ public class AccountController {
     private AppUserRepository appUserRepository;
     @Autowired
     private AuthenticationManager authenticationManager;
-//    @GetMapping("/profile")
-//    public ResponseEntity<Object>profile(Authentication auth){
-//        var response=new HashMap<String,Object>();
-//        response.put("Username",auth.)
-//    }
 
     @PostMapping("/register")
     public ResponseEntity<Map<String, Object>> register(
@@ -63,16 +57,14 @@ public class AccountController {
             return ResponseEntity.badRequest().body(response); // Return 400 with validation errors
         }
 
-
         var bCryptEncoder = new BCryptPasswordEncoder();
         AppUser appUser = new AppUser();
-        appUser.setFullName(registerDto.getFullName());
         appUser.setUsername(registerDto.getUsername());
         appUser.setEmail(registerDto.getEmail());
         appUser.setRole("client");
         appUser.setCreatedAt(new Date());
         appUser.setPassword(bCryptEncoder.encode(registerDto.getPassword()));
-        appUser.setProfileImage("https://student.valuxapps.com/storage/assets/defaults/user.jpg"); // Default profile image
+        appUser.setProfileImage("https://student.valuxapps.com/storage/assets/defaults/user.jpg");
 
         try {
             // Check for duplicate username
@@ -99,7 +91,7 @@ public class AccountController {
 
             // Populate response
             response.put("status", true);
-//            response.put("token", jwtToken);
+            response.put("message", "You signed up successfully."); // Add success message
             response.put("user", appUser);
 
             return ResponseEntity.ok(response); // Return 200 OK with success response
@@ -110,11 +102,6 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response); // Return 500 for server error
         }
     }
-
-
-
-
-
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
@@ -158,7 +145,7 @@ public class AccountController {
 
             // Populate response
             response.put("status", true);
-//            response.put("token", jwtToken);
+            response.put("message", "You logged in successfully."); // Add success message
             response.put("user", appUser);
 
             return ResponseEntity.ok(response); // Return 200 OK with user details and token
@@ -215,6 +202,7 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // 401 for invalid/expired token
         }
     }
+
     @PutMapping("/user/update")
     public ResponseEntity<Map<String, Object>> updateUserByToken(
             @RequestHeader("Authorization") String token,
@@ -247,9 +235,7 @@ public class AccountController {
             }
 
             // Update fields if they exist in the request
-            if (updates.containsKey("fullName")) {
-                appUser.setFullName(updates.get("fullName"));
-            }
+
             if (updates.containsKey("phone")) {
                 appUser.setPhone(updates.get("phone"));
             }
@@ -277,13 +263,6 @@ public class AccountController {
         }
     }
 
-
-
-
-
-
-
-
     @GetMapping("/user")
     public ResponseEntity<Map<String, Object>> getUserByToken(
             @RequestHeader("Authorization") String token) {
@@ -298,7 +277,6 @@ public class AccountController {
 
             // Configure NimbusJwtDecoder with the secret key
             var decoder = NimbusJwtDecoder.withSecretKey(new ImmutableSecret<>(jwtSecretKey.getBytes()).getSecretKey()).macAlgorithm(MacAlgorithm.HS256).build();
-
 
             // Decode the token
             var jwt = decoder.decode(token);
@@ -327,42 +305,31 @@ public class AccountController {
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     private String createJwtToken(AppUser appUser) {
         Instant now = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer(jwtIssuer)
-                .issuedAt(now)
-                .expiresAt(now.plusSeconds(24 * 3600))
-                .subject(appUser.getUsername())
-                .claim("role", appUser.getRole())
+                .issuer(jwtIssuer) // Issuer of the token
+                .issuedAt(now) // Token creation time
+                .expiresAt(now.plusSeconds(7 * 24 * 3600)) //  (7 days)
+                .subject(appUser.getUsername()) // S(username)
+                .claim("role", appUser.getRole()) //  user role
                 .build();
 
+        // Create JWT encoder
         var encoder = new NimbusJwtEncoder(
                 new ImmutableSecret<>(jwtSecretKey.getBytes()));
+
+        // Define JWT header and parameters
         var params = JwtEncoderParameters.from(
                 JwsHeader.with(MacAlgorithm.HS256).build(), claims);
+
+        // Encode the JWT token
         String token = encoder.encode(params).getTokenValue();
 
         // Save the token to the user entity
         appUser.setToken(token);
-        appUserRepository.save(appUser); // Assuming you have a JPA repository
+        appUserRepository.save(appUser); // Save the updated user entity
 
-        return token;
+        return token; // Return the generated token
     }
-
 }

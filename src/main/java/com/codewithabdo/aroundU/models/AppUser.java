@@ -9,7 +9,6 @@ public class AppUser {
     @Id // MongoDB uses @Id for the primary key
     private String id; // MongoDB uses String for ID by default
 
-    private String fullName;
     private String username;
     private String email;
     private String phone;
@@ -29,13 +28,6 @@ public class AppUser {
         this.id = id;
     }
 
-    public String getFullName() {
-        return fullName;
-    }
-
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
 
     public String getUsername() {
         return username;

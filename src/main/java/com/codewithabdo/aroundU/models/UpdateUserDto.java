@@ -4,8 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public class UpdateUserDto {
-    @NotBlank(message = "Full name cannot be empty")
-    private String fullName;
+
 
     @Email(message = "Email should be valid")
     private String email;
@@ -16,13 +15,7 @@ public class UpdateUserDto {
     private String address; // New field
 
     // Getters and Setters
-    public String getFullName() {
-        return fullName;
-    }
 
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
-    }
 
     public String getEmail() {
         return email;
