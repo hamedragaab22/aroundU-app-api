@@ -61,6 +61,7 @@ public class AccountController {
         AppUser appUser = new AppUser();
         appUser.setUsername(registerDto.getUsername());
         appUser.setEmail(registerDto.getEmail());
+        appUser.setPhone(registerDto.getPhone());
         appUser.setRole("client");
         appUser.setCreatedAt(new Date());
         appUser.setPassword(bCryptEncoder.encode(registerDto.getPassword()));
