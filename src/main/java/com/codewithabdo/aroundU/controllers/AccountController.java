@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/account")
@@ -123,7 +124,7 @@ public class AccountController {
         }
 
         try {
-            // Authenticate the user using email and password
+            // Authenticate the user
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginDto.getEmail(),
@@ -131,7 +132,7 @@ public class AccountController {
                     )
             );
 
-            // Fetch user details by email
+            // Fetch user details
             AppUser appUser = appUserRepository.findByEmail(loginDto.getEmail());
             if (appUser == null) {
                 response.put("status", false);
@@ -146,7 +147,7 @@ public class AccountController {
 
             // Populate response
             response.put("status", true);
-            response.put("message", "You logged in successfully."); // Add success message
+            response.put("message", "You have logged in successfully.");
             response.put("user", appUser);
 
             return ResponseEntity.ok(response); // Return 200 OK with user details and token
@@ -157,52 +158,6 @@ public class AccountController {
         }
     }
 
-    @DeleteMapping("/deleteUser")
-    public ResponseEntity<Map<String, Object>> deleteUserByToken(
-            @RequestHeader("Authorization") String token) {
-
-        Map<String, Object> response = new HashMap<>();
-
-        try {
-            // Remove "Bearer " prefix if present
-            if (token.startsWith("Bearer ")) {
-                token = token.substring(7);
-            }
-
-            // Configure NimbusJwtDecoder with the secret key
-            var decoder = NimbusJwtDecoder.withSecretKey(new ImmutableSecret<>(jwtSecretKey.getBytes()).getSecretKey())
-                    .macAlgorithm(MacAlgorithm.HS256)
-                    .build();
-
-            // Decode the token
-            var jwt = decoder.decode(token);
-
-            // Extract the username (subject) from the token claims
-            String username = jwt.getClaimAsString("sub");
-
-            // Retrieve user from the database
-            AppUser appUser = appUserRepository.findByUsername(username);
-            if (appUser == null) {
-                response.put("status", false);
-                response.put("message", "User not found.");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // 404 if user not found
-            }
-
-            // Delete the user
-            appUserRepository.delete(appUser);
-
-            // Populate response
-            response.put("status", true);
-            response.put("message", "User deleted successfully.");
-
-            return ResponseEntity.ok(response); // Return 200 OK with success message
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            response.put("status", false);
-            response.put("message", "Invalid or expired token.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // 401 for invalid/expired token
-        }
-    }
 
     @PutMapping("/user/update")
     public ResponseEntity<Map<String, Object>> updateUserByToken(
@@ -312,7 +267,7 @@ public class AccountController {
                 .issuer(jwtIssuer) // Issuer of the token
                 .issuedAt(now) // Token creation time
                 .expiresAt(now.plusSeconds(7 * 24 * 3600)) //  (7 days)
-                .subject(appUser.getUsername()) // S(username)
+                .subject(appUser.getEmail()) // S(username)
                 .claim("role", appUser.getRole()) //  user role
                 .build();
 

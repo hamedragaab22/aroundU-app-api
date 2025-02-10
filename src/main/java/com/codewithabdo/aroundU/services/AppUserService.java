@@ -16,10 +16,10 @@ public class AppUserService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        AppUser appUser=repo.findByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        AppUser appUser=repo.findByEmail(email);
         if (appUser!=null){
-            var springUser= User.withUsername(appUser.getUsername())
+            var springUser= User.withUsername(appUser.getEmail())
                     .password(appUser.getPassword())
                     .roles(appUser.getRole())
                     .build();

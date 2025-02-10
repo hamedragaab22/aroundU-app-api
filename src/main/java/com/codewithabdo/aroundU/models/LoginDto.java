@@ -1,18 +1,13 @@
 package com.codewithabdo.aroundU.models;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 
 public class LoginDto {
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
+    @NotEmpty
     private String email;
-
-    @NotBlank(message = "Password is required")
+    @NotEmpty
     private String password;
 
-    // Getters and Setters
     public String getEmail() {
         return email;
     }
