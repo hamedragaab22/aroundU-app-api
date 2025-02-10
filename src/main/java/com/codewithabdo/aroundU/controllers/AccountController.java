@@ -218,6 +218,52 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
     }
+    @DeleteMapping("/deleteUser")
+    public ResponseEntity<Map<String, Object>> deleteUserByToken(
+            @RequestHeader("Authorization") String token) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // Remove "Bearer " prefix if present
+            if (token.startsWith("Bearer ")) {
+                token = token.substring(7);
+            }
+
+            // Configure NimbusJwtDecoder with the secret key
+            var decoder = NimbusJwtDecoder.withSecretKey(new ImmutableSecret<>(jwtSecretKey.getBytes()).getSecretKey())
+                    .macAlgorithm(MacAlgorithm.HS256)
+                    .build();
+
+            // Decode the token
+            var jwt = decoder.decode(token);
+
+            // Extract the username (subject) from the token claims
+            String email = jwt.getClaimAsString("sub");
+
+            // Retrieve user from the database
+            AppUser appUser = appUserRepository.findByEmail(email);
+            if (appUser == null) {
+                response.put("status", false);
+                response.put("message", "User not found.");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response); // 404 if user not found
+            }
+
+            // Delete the user
+            appUserRepository.delete(appUser);
+
+            // Populate response
+            response.put("status", true);
+            response.put("message", "User deleted successfully.");
+
+            return ResponseEntity.ok(response); // Return 200 OK with success message
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            response.put("status", false);
+            response.put("message", "Invalid or expired token.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // 401 for invalid/expired token
+        }
+    }
 
     @GetMapping("/user")
     public ResponseEntity<Map<String, Object>> getUserByToken(
