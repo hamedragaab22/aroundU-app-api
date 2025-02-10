@@ -180,10 +180,10 @@ public class AccountController {
             var jwt = decoder.decode(token);
 
             // Extract the username (subject) from the token claims
-            String username = jwt.getClaimAsString("sub");
+            String email = jwt.getClaimAsString("sub");
 
             // Retrieve user from the database
-            AppUser appUser = appUserRepository.findByUsername(username);
+            AppUser appUser = appUserRepository.findByEmail(email);
             if (appUser == null) {
                 response.put("status", false);
                 response.put("message", "User not found.");
@@ -238,10 +238,10 @@ public class AccountController {
             var jwt = decoder.decode(token);
 
             // Extract the username (subject) from the token claims
-            String username = jwt.getClaimAsString("sub");
+            String email = jwt.getClaimAsString("sub");
 
             // Retrieve user from the database
-            AppUser appUser = appUserRepository.findByUsername(username);
+            AppUser appUser = appUserRepository.findByEmail(email);
             if (appUser == null) {
                 response.put("status", false);
                 response.put("message", "User not found.");
