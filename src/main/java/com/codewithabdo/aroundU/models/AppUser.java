@@ -18,6 +18,15 @@ public class AppUser {
     private Date createdAt;
     private String profileImage;
     private String token;
+    private String verificationCode;
+
+    public String getVerificationCode() {
+        return verificationCode;
+    }
+
+    public void setVerificationCode(String verificationCode) {
+        this.verificationCode = verificationCode;
+    }
 
     // Getters and Setters
     public String getId() {

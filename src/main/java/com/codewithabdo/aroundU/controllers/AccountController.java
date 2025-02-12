@@ -1,10 +1,8 @@
 package com.codewithabdo.aroundU.controllers;
 
-import com.codewithabdo.aroundU.models.AppUser;
-import com.codewithabdo.aroundU.models.LoginDto;
-import com.codewithabdo.aroundU.models.RegisterDto;
-import com.codewithabdo.aroundU.models.UpdateUserDto;
+import com.codewithabdo.aroundU.models.*;
 import com.codewithabdo.aroundU.repositories.AppUserRepository;
+import com.codewithabdo.aroundU.services.EmailService;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import jakarta.validation.Valid;
 import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
@@ -23,10 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKey;
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/account")
@@ -157,6 +152,84 @@ public class AccountController {
             return ResponseEntity.badRequest().body(response); // Return 400 for invalid credentials
         }
     }
+    @Autowired
+    private EmailService emailService;
+
+    private Map<String, String> verificationCodes = new HashMap<>();
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, Object>> forgotPassword(
+            @RequestBody ForgotPasswordDto forgotPasswordDto, BindingResult result) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (result.hasErrors()) {
+            response.put("status", false);
+            response.put("message", "Invalid email format.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Find user by email
+        Optional<AppUser> userOptional = Optional.ofNullable(appUserRepository.findByEmail(forgotPasswordDto.getEmail()));
+        if (userOptional.isEmpty()) {
+            response.put("status", false);
+            response.put("message", "User not found.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Generate a verification code
+        String verificationCode = String.format("%06d", new Random().nextInt(999999));
+        verificationCodes.put(forgotPasswordDto.getEmail(), verificationCode);
+
+        // Send email with verification code
+        emailService.sendEmail(
+                forgotPasswordDto.getEmail(),
+                "Password Reset Code",
+                "Your password reset code is: " + verificationCode
+        );
+
+        response.put("status", true);
+        response.put("message", "Verification code sent to email.");
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(
+            @RequestBody Map<String, String> request) {
+
+        Map<String, Object> response = new HashMap<>();
+        String email = request.get("email");
+        String code = request.get("code");
+        String newPassword = request.get("newPassword");
+
+        // Validate code
+        if (!verificationCodes.containsKey(email) || !verificationCodes.get(email).equals(code)) {
+            response.put("status", false);
+            response.put("message", "Invalid verification code.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Find user
+        Optional<AppUser> userOptional = Optional.ofNullable(appUserRepository.findByEmail(email));
+        if (userOptional.isEmpty()) {
+            response.put("status", false);
+            response.put("message", "User not found.");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        // Update password
+        AppUser user = userOptional.get();
+        user.setPassword(new BCryptPasswordEncoder().encode(newPassword));
+        appUserRepository.save(user);
+
+        // Remove used code
+        verificationCodes.remove(email);
+
+        response.put("status", true);
+        response.put("message", "Password reset successfully.");
+        return ResponseEntity.ok(response);
+    }
+
 
 
     @PutMapping("/user/update")

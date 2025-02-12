@@ -8,4 +8,5 @@ public interface AppUserRepository extends MongoRepository<AppUser, String> { //
     public AppUser findByUsername(String username);
     public AppUser findByEmail(String email);
     AppUser findByToken(String token);
+    AppUser findByVerificationCode (String verificationCode);
 }

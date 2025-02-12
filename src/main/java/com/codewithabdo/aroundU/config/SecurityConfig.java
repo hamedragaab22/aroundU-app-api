@@ -34,6 +34,8 @@ public class SecurityConfig {
                         .requestMatchers("/account").permitAll()
                         .requestMatchers("/account/login").permitAll()
                         .requestMatchers("/account/register").permitAll()
+                        .requestMatchers("/account/forgot-password").permitAll()
+                        .requestMatchers("/account/reset-password").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
